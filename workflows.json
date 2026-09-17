@@ -1,0 +1,114 @@
+{
+  "workflows": [
+    {
+      "description": "Investor/partner emails get classified, summarized, a reply drafted, and a task created.",
+      "name": "vip-deal-triage",
+      "steps": [
+        {
+          "op": "classify"
+        },
+        {
+          "op": "summarize"
+        },
+        {
+          "op": "draft_reply"
+        },
+        {
+          "op": "create_task",
+          "template": "[{label}] Reply to {sender}: {subject} \u2014 {summary}"
+        }
+      ],
+      "trigger": {
+        "filter": {
+          "from": [
+            "acmecorp.com",
+            "sequoia",
+            "partner"
+          ]
+        },
+        "type": "new_email"
+      }
+    },
+    {
+      "description": "Customer breakage reports become high-priority tasks with an AI summary.",
+      "name": "support-triage",
+      "steps": [
+        {
+          "op": "classify"
+        },
+        {
+          "op": "summarize"
+        },
+        {
+          "op": "create_task",
+          "template": "[SUPPORT-{label}] {subject} \u2014 {summary}"
+        }
+      ],
+      "trigger": {
+        "filter": {
+          "body": {
+            "regex": "\\bbroken\\b|can't log\\s?in|cannot log\\s?in|authentication error|locked out|\\bbug\\b|\\boutage\\b|\\bcrash\\b"
+          }
+        },
+        "type": "new_email"
+      }
+    },
+    {
+      "description": "Newsletters collapse into a daily digest instead of inbox clutter.",
+      "name": "newsletter-digest",
+      "steps": [
+        {
+          "op": "summarize"
+        },
+        {
+          "file": "digest.md",
+          "op": "append_digest"
+        }
+      ],
+      "trigger": {
+        "filter": {
+          "from": [
+            "newsletter",
+            "digest",
+            "brew",
+            "substack"
+          ]
+        },
+        "type": "new_email"
+      }
+    },
+    {
+      "description": "Receipts and invoices become structured expense rows.",
+      "name": "receipt-ledger",
+      "steps": [
+        {
+          "fields": [
+            "vendor",
+            "amount",
+            "date"
+          ],
+          "op": "extract"
+        },
+        {
+          "columns": [
+            "vendor",
+            "amount",
+            "date"
+          ],
+          "file": "expenses.csv",
+          "op": "append_csv"
+        }
+      ],
+      "trigger": {
+        "filter": {
+          "subject": [
+            "receipt",
+            "invoice",
+            "billing"
+          ]
+        },
+        "type": "new_email"
+      }
+    }
+  ]
+}
